@@ -1,0 +1,65 @@
+snippet     program
+abbr        
+options     head
+    \lstinputlisting[label=src:${1:filename}, caption=$1]{$1}${0}
+
+snippet     refp
+abbr        
+    Program\ref{src:${1:filename}}${0}
+
+snippet     reff
+abbr        
+    図\ref{fig:${1:filename}}${0}
+
+snippet     reft
+abbr        
+    表\ref{tab:${1:label}}${0}
+
+snippet     table
+abbr        
+options     head
+    \begin{table}[htbp]
+        \caption{${1:caption}}
+        \begin{center}
+            \begin{tabular}{${2:|r|r|}} \hline
+                % a & b & c \\ \hline
+            \end{tabular}
+        \end{center}
+        \label{tab:${3:label}}
+    \end{table}
+
+snippet     figure
+abbr        
+options     head
+    \begin{figure}[htbp]
+        \begin{center}
+            \includegraphics[scale=${1:0.45}]{${2:png}}
+        \end{center}
+        \caption{${3:caption}}
+        \label{fig:$2}
+    \end{figure}
+    
+snippet     figure2
+abbr         
+options     head
+    \begin{figure}[htbp]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[scale=${1:0.45}]{${2:png}}
+  \end{center}
+    \caption{${3:caption}}
+  \label{fig:$2}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[scale=${4:0.45}]{${5:png}}
+  \end{center}
+  \caption{${6:caption}}
+  \label{fig:$5}
+ \end{minipage}
+    \end{figure}
+
+snippet     frac
+abbr        
+options     head
+    \frac{${1}}{${2}}${0}

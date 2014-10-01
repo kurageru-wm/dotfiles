@@ -1,0 +1,1 @@
+runtime! load/*.vim
