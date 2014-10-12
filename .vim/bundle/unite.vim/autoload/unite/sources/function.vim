@@ -1,7 +1,6 @@
 "=============================================================================
 " FILE: function.vim
 " AUTHOR:  Shougo Matsushita <Shougo.Matsu@gmail.com>
-" Last Modified: 31 Dec 2012.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -57,8 +56,6 @@ function! s:source.gather_candidates(args, context) "{{{
     if line =~ '^<SNR>'
       continue
     endif
-    let orig_line = line
-
     let word = matchstr(line, '\h[[:alnum:]_:#.]*\ze()\?')
     if word == ''
       continue
@@ -150,6 +147,19 @@ function! s:source.action_table.call.func(candidate) "{{{
   endif
 endfunction"}}}
 "}}}
+
+let s:source.action_table.edit = {
+      \ 'description' : 'edit the function from the source',
+      \ }
+function! s:source.action_table.edit.func(candidates) "{{{
+  redir => func
+  silent execute 'verbose function '.a:candidates.action__function
+  redir END
+  let path = matchstr(split(func,'\n')[1], 'Last set from \zs.*$')
+  execute 'edit' fnameescape(path)
+  execute search('^[ \t]*fu\%(nction\)\?[ !]*'.
+        \ a:candidates.action__function)
+endfunction"}}}
 
 let &cpo = s:save_cpo
 unlet s:save_cpo

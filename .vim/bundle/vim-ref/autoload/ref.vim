@@ -441,6 +441,7 @@ function! s:initialize_buffer(source)
   setlocal buftype=nofile noswapfile
   setlocal bufhidden=delete
   setlocal nonumber
+  setlocal norelativenumber
 
   let b:ref_history = []  " stack [source, query, changenr, cursor]
   let b:ref_history_pos = -1  " pointer
@@ -555,6 +556,7 @@ function! s:open(source, query, options)
 
   let query = source.normalize(a:query)
   try
+    let query = a:source=='man' ? v:count1 . ' ' . query : query
     let res = source.get_body(query)
     if type(res) == s:T.dictionary
       let dict = res
@@ -710,7 +712,7 @@ function! s:validate(source, key, type)
     throw 'ref: Invalid source: Without key ' . string(a:key)
   elseif type(a:source[a:key]) != s:T[a:type]
     throw 'ref: Invalid source: Key ' . key . ' must be ' . a:type . ', ' .
-    \     'but given value is' string(a:source[a:key])
+    \     'but given value is' . string(a:source[a:key])
   endif
 endfunction
 

@@ -1,7 +1,6 @@
 "=============================================================================
 " FILE: jump_point.vim
 " AUTHOR:  Shougo Matsushita <Shougo.Matsu@gmail.com>
-" Last Modified: 02 Oct 2012.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -75,7 +74,7 @@ function! s:source.gather_candidates(args, context) "{{{
     else
       let candidate.action__text = join(list, ':')
       let candidate.action__pattern =
-            \ unite#escape_match(candidate.action__text)
+            \ unite#util#escape_match(candidate.action__text)
     endif
 
     call add(candidates, candidate)

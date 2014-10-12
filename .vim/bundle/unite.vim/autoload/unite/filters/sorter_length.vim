@@ -1,7 +1,6 @@
 "=============================================================================
 " FILE: sorter_length.vim
 " AUTHOR:  Shougo Matsushita <Shougo.Matsu@gmail.com>
-" Last Modified: 19 Oct 2012.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -37,7 +36,8 @@ let s:sorter = {
       \}
 
 function! s:sorter.filter(candidates, context) "{{{
-  return unite#util#sort_by(a:candidates, 'len(v:val.word)')
+  return unite#util#sort_by(a:candidates,
+        \ "len(v:val.word) + 100*len(substitute(v:val.word, '[^/]', '', 'g'))")
 endfunction"}}}
 
 let &cpo = s:save_cpo

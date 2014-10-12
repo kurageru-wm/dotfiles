@@ -51,7 +51,7 @@ bindkey "\e[3~" delete-char
 
 #bindkey "^S" kill-whole-line
 bindkey -M afu "^U" forward-char
-bindkey -M afu "^F" kill-whole-line
+#bindkey -M afu "^F" kill-whole-line
 #bindkey "^N" clear-screen
 #bindkey "^B" down-line-or-history
 bindkey -M afu "^T" kill-line

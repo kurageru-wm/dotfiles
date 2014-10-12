@@ -1,7 +1,6 @@
 "=============================================================================
 " FILE: window.vim
 " AUTHOR:  Shougo Matsushita <Shougo.Matsu@gmail.com>
-" Last Modified: 02 Oct 2012.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -29,18 +28,6 @@ set cpo&vim
 
 function! unite#sources#window#define() "{{{
   return s:source
-endfunction"}}}
-function! unite#sources#window#_append() "{{{
-  if &filetype == 'unite'
-    " Ignore unite window.
-    return
-  endif
-
-  " Save unite window information.
-  let w:unite_window = {
-        \ 'time' : localtime(),
-        \ 'cwd' : getcwd(),
-        \}
 endfunction"}}}
 
 let s:source = {

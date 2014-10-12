@@ -1,5 +1,5 @@
 " A ref source for pydoc.
-" Version: 0.4.1
+" Version: 0.4.2
 " Author : thinca <thinca+vim@gmail.com>
 " License: Creative Commons Attribution 2.1 Japan License
 "          <http://creativecommons.org/licenses/by/2.1/jp/deed.en>
@@ -9,7 +9,7 @@ set cpo&vim
 
 " options. {{{1
 if !exists('g:ref_pydoc_cmd')  " {{{2
-  let g:ref_pydoc_cmd = executable('pydoc') ? 'pydoc' : ''
+  let g:ref_pydoc_cmd = executable('python') ? 'python -m pydoc' : ''
 endif
 
 if !exists('g:ref_pydoc_complete_head')  " {{{2
@@ -130,7 +130,11 @@ function! s:source.get_keyword()
       endif
     endif
   else
-    " TODO: In a Python code.
+    " In Python code.
+    let module = s:ExpandModulePath()
+    if module != ''
+      return module
+    endif
   endif
 
   return ref#get_text_on_cursor('[[:alnum:].]\+')
@@ -198,6 +202,23 @@ function! s:head(list, query)
   let pat = '^\V' . a:query . '\v\w*(\.)?\zs.*$'
   return ref#uniq(map(filter(copy(a:list), 'v:val =~# pat'),
   \             'substitute(v:val, pat, "", "")'))
+endfunction
+
+function! s:ExpandModulePath()
+  " Extract the 'word' at the cursor, expanding leftwards across identifiers
+  " and the . operator, and rightwards across the identifier only.
+  "
+  " For example:
+  " import xml.dom.minidom
+  " ^ !
+  "
+  " With the cursor at ^ this returns 'xml'; at ! it returns 'xml.dom'.
+  "
+  " Source: https://github.com/fs111/pydoc.vim/blob/master/ftplugin/python_pydoc.vim
+  let l:line = getline(".")
+  let l:pre = l:line[:col(".") - 1]
+  let l:suf = l:line[col("."):]
+  return matchstr(pre, "[A-Za-z0-9_.]*$") . matchstr(suf, "^[A-Za-z0-9_]*")
 endfunction
 
 function! ref#pydoc#define()

@@ -49,26 +49,28 @@ let s:OUTLINE_ALIASES = {
       \ 'sh'      : ['zsh'],
       \ }
 
-let s:OUTLINE_CACHE_DIR = g:unite_data_directory . '/outline'
+let s:OUTLINE_CACHE_DIR = unite#get_data_directory() . '/outline'
+
+let s:supported_arguments = [ 'filetype', 'folding', 'update' ]
 
 " Rename the cache directory if its name is still old, dotted style name.
 " See http://d.hatena.ne.jp/tyru/20110824/unite_file_mru
 "
-let old_cache_dir = g:unite_data_directory . '/.outline'
+let s:old_cache_dir = unite#get_data_directory() . '/.outline'
 if isdirectory(s:OUTLINE_CACHE_DIR)
-  if isdirectory(old_cache_dir) 
+  if isdirectory(s:old_cache_dir)
     call unite#print_message("[unite-outline] Warning: Please remove the old cache directory: ")
-    call unite#print_message("[unite-outline] " . old_cache_dir)
+    call unite#print_message("[unite-outline] " . s:old_cache_dir)
   endif
 else " if !isdirectory(s:OUTLINE_CACHE_DIR)
-  if isdirectory(old_cache_dir)
-    if rename(old_cache_dir, s:OUTLINE_CACHE_DIR) != 0
-      let s:OUTLINE_CACHE_DIR = old_cache_dir
+  if isdirectory(s:old_cache_dir)
+    if rename(s:old_cache_dir, s:OUTLINE_CACHE_DIR) != 0
+      let s:OUTLINE_CACHE_DIR = s:old_cache_dir
       call unite#util#print_error("unite-outline: Couldn't rename the cache directory.")
     endif
   endif
 endif
-unlet old_cache_dir
+unlet s:old_cache_dir
 
 let s:FILECACHE_FORMAT_VERSION = 2
 let s:FILECACHE_FORMAT_VERSION_KEY = '__unite_outline_filecache_format_version__'
@@ -470,8 +472,8 @@ let s:default_highlight = {
       \ 'id'      : 'Special',
       \ 'macro'   : 'Macro',
       \ 'method'  : 'Function',
-      \ 'normal'  : g:unite_abbr_highlight,
-      \ 'package' : g:unite_abbr_highlight,
+      \ 'normal'  : 'Normal',
+      \ 'package' : 'Normal',
       \ 'special' : 'Macro',
       \ 'type'    : 'Type',
       \ 'level_1' : 'Type',
@@ -479,8 +481,8 @@ let s:default_highlight = {
       \ 'level_3' : 'Identifier',
       \ 'level_4' : 'Constant',
       \ 'level_5' : 'Special',
-      \ 'level_6' : g:unite_abbr_highlight,
-      \ 'parameter_list': g:unite_abbr_highlight,
+      \ 'level_6' : 'Normal',
+      \ 'parameter_list': 'Normal',
       \ }
 if !exists('g:unite_source_outline_highlight')
   let g:unite_source_outline_highlight = {}
@@ -494,8 +496,8 @@ endif
 " Aliases
 
 " Define the default filetype aliases.
-for [ftype, aliases] in items(s:OUTLINE_ALIASES)
-  call call('s:define_filetype_aliases', [aliases, ftype])
+for [s:ftype, s:aliases] in items(s:OUTLINE_ALIASES)
+  call call('s:define_filetype_aliases', [s:aliases, s:ftype])
 endfor
 
 "-----------------------------------------------------------------------------
@@ -515,7 +517,8 @@ let s:outline_buffer_id = 1
 let s:source = {
       \ 'name'       : 'outline',
       \ 'description': 'candidates from heading list',
-      \ 'filters'    : ['outline_matcher_glob', 'outline_formatter'],
+      \ 'matchers'   : 'outline_matcher_glob',
+      \ 'converters' : 'outline_formatter',
       \ 'syntax'     : 'uniteSource__Outline',
       \
       \ 'hooks': {}, 'action_table': {}, 'alias_table': {}, 'default_action': {},
@@ -642,6 +645,10 @@ function! s:Source_gather_candidates(source_args, unite_context)
   endtry
 endfunction
 let s:source.gather_candidates = function(s:SID . 'Source_gather_candidates')
+
+function! s:source.complete(args, context, arglead, cmdline, cursorpos) "{{{
+	return s:supported_arguments
+endfunction"}}}
 
 function! s:parse_source_arguments(source_args, unite_context)
   let options = {

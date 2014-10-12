@@ -1,7 +1,6 @@
 "=============================================================================
 " FILE: matcher_glob.vim
 " AUTHOR:  Shougo Matsushita <Shougo.Matsu@gmail.com>
-" Last Modified: 29 May 2013.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -36,6 +35,11 @@ let s:matcher = {
       \ 'description' : 'glob matcher',
       \}
 
+function! s:matcher.pattern(input) "{{{
+  return substitute(unite#util#escape_match(a:input),
+          \ '\\\@<!|', '\\|', 'g')
+endfunction"}}}
+
 function! s:matcher.filter(candidates, context) "{{{
   if a:context.input == ''
     return unite#filters#filter_matcher(
@@ -52,7 +56,7 @@ function! s:matcher.filter(candidates, context) "{{{
 endfunction"}}}
 
 function! unite#filters#matcher_glob#glob_matcher(candidates, input, context) "{{{
-  let input = substitute(a:input, '\\ ', ' ', 'g')
+  let input = substitute(unite#util#expand(a:input), '\\ ', ' ', 'g')
 
   if input =~ '^!'
     if input == '!'
@@ -60,16 +64,20 @@ function! unite#filters#matcher_glob#glob_matcher(candidates, input, context) "{
     endif
 
     " Exclusion.
-    let input = substitute(unite#escape_match(input),
+    let input = substitute(unite#util#escape_match(input),
           \ '\\\@<!|', '\\|', 'g')
     let expr = 'v:val.word !~ ' . string(input[1:])
+  elseif input =~ '^:'
+    " Executes command.
+    let a:context.execute_command = input[1:]
+    return a:candidates
   elseif input =~ '\\\@<![*|]'
     " Wildcard(*) or OR(|).
-    let input = substitute(unite#escape_match(input),
-          \ '\\\@<!|', '\\|', 'g')
+    let input = s:matcher.pattern(input)
     let expr = 'v:val.word =~ ' . string(input)
   elseif unite#util#has_lua()
     let expr = 'if_lua'
+    let a:context.input = input
   else
     let input = substitute(input, '\\\(.\)', '\1', 'g')
     let expr = &ignorecase ?

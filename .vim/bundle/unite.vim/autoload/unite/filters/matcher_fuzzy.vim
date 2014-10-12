@@ -1,7 +1,6 @@
 "=============================================================================
 " FILE: matcher_fuzzy.vim
 " AUTHOR:  Shougo Matsushita <Shougo.Matsu@gmail.com>
-" Last Modified: 03 Jun 2013.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -31,10 +30,21 @@ function! unite#filters#matcher_fuzzy#define() "{{{
   return s:matcher
 endfunction"}}}
 
+call unite#util#set_default('g:unite_matcher_fuzzy_max_input_length', 20)
+
 let s:matcher = {
       \ 'name' : 'matcher_fuzzy',
       \ 'description' : 'fuzzy matcher',
       \}
+
+function! s:matcher.pattern(input) "{{{
+  let chars = map(split(a:input, '\zs'), "escape(v:val, '\\[]^$.*')")
+  let pattern =
+        \   substitute(join(map(chars[:-2], "
+        \       printf('%s[^%s]\\{-}', v:val, v:val)
+        \   "), '') . chars[-1], '\*\*', '*', 'g')
+  return pattern
+endfunction"}}}
 
 function! s:matcher.filter(candidates, context) "{{{
   if a:context.input == ''
@@ -42,27 +52,34 @@ function! s:matcher.filter(candidates, context) "{{{
           \ a:candidates, '', a:context)
   endif
 
-  if len(a:context.input) > 20
-    " Fall back to matcher_glob.
+  if len(a:context.input) == 1
+    " Fallback to glob matcher.
     return unite#filters#matcher_glob#define().filter(
           \ a:candidates, a:context)
   endif
 
+  " Fix for numeric problem.
+  let $LC_NUMERIC = 'en_US.utf8'
+
   let candidates = a:candidates
-  for input in a:context.input_list
-    let input = substitute(input, '\\ ', ' ', 'g')
-    if input == '!'
+  for input_orig in a:context.input_list
+    let input = substitute(unite#util#expand(input_orig), '\\ ', ' ', 'g')
+    if input == '!' || input == ''
+      continue
+    elseif input =~ '^:'
+      " Executes command.
+      let a:context.execute_command = input[1:]
       continue
     endif
 
-    let input = substitute(substitute(unite#escape_match(input),
-          \ '[[:alnum:]._-]', '\0.*', 'g'), '\*\*', '*', 'g')
+    let input = s:matcher.pattern(input)
 
     let expr = (input =~ '^!') ?
           \ 'v:val.word !~ ' . string(input[1:]) :
           \ 'v:val.word =~ ' . string(input)
     if input !~ '^!' && unite#util#has_lua()
       let expr = 'if_lua_fuzzy'
+      let a:context.input = input_orig
     endif
 
     let candidates = unite#filters#filter_matcher(
@@ -70,6 +87,24 @@ function! s:matcher.filter(candidates, context) "{{{
   endfor
 
   return candidates
+endfunction"}}}
+
+function! unite#filters#matcher_fuzzy#get_fuzzy_input(input) "{{{
+  let input = a:input
+  let head = ''
+  if len(input) > g:unite_matcher_fuzzy_max_input_length
+    let pos = strridx(input, '/')
+    if pos > 0
+      let head = input[: pos-1]
+      let input = input[pos :]
+    endif
+    if len(input) > g:unite_matcher_fuzzy_max_input_length
+      let head = input
+      let input = ''
+    endif
+  endif
+
+  return [head, input]
 endfunction"}}}
 
 let &cpo = s:save_cpo

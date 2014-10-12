@@ -14,10 +14,6 @@ let g:gauref_file='~/.vim/bundle/gauref.vim/doc/gauche-ref.txt'
 vmap <Space>a <Plug>(gosh_repl_send_block)
 let g:gosh_buffer_direction = 'v'
 
-"Python
-let g:SuperTabDefaultCompletionType = "context"
-set completeopt=menuone,preview,longest
-autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
 
 "C/C++
 set path =.,/usr/include,/usr/include/GL,/usr/include/GL/internal
@@ -28,6 +24,18 @@ let g:netrw_liststyle = 3
 
 "Unite
 let g:unite_enable_start_insert=0
+
+" neocomplete
+let g:neocomplete#enable_at_startup = 1
+let g:neocomplete#enable_smart_case = 1
+let g:neocomplete#sources#syntax#min_keyword_length = 1
+
+" Enable heavy omni completion.
+if !exists('g:neocomplete#sources#omni#input_patterns')
+  let g:neocomplete#sources#omni#input_patterns = {}
+endif
+
+
 
 " neocompcache
 let g:neocomplcache_enable_at_startup = 1
